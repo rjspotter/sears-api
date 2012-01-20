@@ -47,4 +47,14 @@ module SearsApi
 
   end
 
+  class Response
+
+    attr_accessor :resp
+
+    def initialize(resp)
+      @resp = resp
+    end
+
+  end
+
 end

@@ -99,4 +99,17 @@ describe "SearsApi" do
     end
 
   end
+
+  describe "Response" do
+
+    subject {SearsApi::Response}
+
+    before  {@resp = stub}
+
+    it "takes a generic response and interns it" do
+      subject.new(@resp).resp.should == @resp
+    end
+
+  end
+
 end
