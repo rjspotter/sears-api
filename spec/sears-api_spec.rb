@@ -1,4 +1,5 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
+require "ostruct"
 
 describe "SearsApi" do
 
@@ -19,6 +20,11 @@ describe "SearsApi" do
 
     it "has the correct base url" do
       subject.base_uri.should == "http://api.developer.sears.com/v1"
+    end
+
+    it "returns a custom response object" do
+      subject.stub(:get) { [] }
+      subject.kget('/foo').class.should == SearsApi::Response
     end
 
     context "query defaults" do
@@ -104,10 +110,48 @@ describe "SearsApi" do
 
     subject {SearsApi::Response}
 
-    before  {@resp = stub}
+    before  {@resp = stub.as_null_object}
 
     it "takes a generic response and interns it" do
       subject.new(@resp).resp.should == @resp
+    end
+
+    it "is extended with Search if needed" do
+      @resp.stub_chain(:first,:first).and_return("MercadoResult")
+      subject.new(@resp).singleton_class.included_modules.
+        should include(SearsApi::Search)
+    end
+
+  end
+
+  describe "Search Results Mixin" do
+
+
+
+    before {
+      @resp = stub.as_null_object
+      @s = OpenStruct.new(:resp => @resp)
+      @s.extend(SearsApi::Search)
+    }
+    subject {@s}
+
+    it "knows the product count" do
+      expecter = stub.tap do |x|
+        x.should_receive(:[]).with('ProductCount').
+          and_return('161')
+      end
+      @resp.stub_chain(:first,:[]).and_return(expecter)
+      subject.count.should == "161"
+    end
+
+    it "retuns a list of products" do
+      # resp.first[1]["Products"]['Product']
+      expecter = stub.tap do |x|
+        x.should_receive(:[]).with('Product').
+          and_return([])
+      end
+      @resp.stub_chain(:first,:[],:[]).and_return(expecter)
+      subject.products.should == []
     end
 
   end

@@ -1,4 +1,5 @@
 require 'httparty'
+require 'ick'
 module SearsApi
 
   class Configuration
@@ -19,7 +20,7 @@ module SearsApi
         opt[:query] ||= {}
         opt[:query].merge!({:apikey => SearsApi::Configuration.key, 
                             :store  => 'Sears'}) {|k,v1,v2| v1}
-        get(path, opt)
+        Response.new(get(path, opt))
       end
 
       def product_details(part_number, opt = {})
@@ -53,6 +54,22 @@ module SearsApi
 
     def initialize(resp)
       @resp = resp
+      self.extend Search if try(resp) {|x| x.first.first} == "MercadoResult"
+    end
+
+  end
+
+  Ick::Try.belongs_to Response
+
+
+  module Search
+
+    def count
+      resp.first[1]['ProductCount']
+    end
+
+    def products
+      resp.first[1]["Products"]['Product']
     end
 
   end
