@@ -31,22 +31,20 @@ RSpec::Core::RakeTask.new(:spec) do |spec|
   spec.pattern = FileList['spec/**/*_spec.rb']
 end
 
-RSpec::Core::RakeTask.new(:rcov) do |spec|
-  spec.pattern = 'spec/**/*_spec.rb'
-  spec.rcov = true
-end
+namespace :metrics do
+  desc "shows flog complexity metric"
+  task :flog do
+    puts `find app lib -name \*.rb -printf "%p " | xargs flog -a`
+  end
 
-require 'reek/rake/task'
-Reek::Rake::Task.new do |t|
-  t.fail_on_error = true
-  t.verbose = false
-  t.source_files = 'lib/**/*.rb'
-end
+  desc "show flay duplication (copy/paste) metric"
+  task :flay do
+    puts "Flay " + `find app lib -name \*.rb -printf "%p " | xargs flay`
+  end
 
-require 'roodi'
-require 'roodi_task'
-RoodiTask.new do |t|
-  t.verbose = false
+  desc "run flay and flog"
+  task :all => [:flay, :flog] 
+
 end
 
 task :default => :spec
