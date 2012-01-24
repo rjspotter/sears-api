@@ -1,5 +1,8 @@
 require 'httparty'
 require 'ick'
+require 'active_support/inflector/methods'
+require 'ostruct'
+
 module SearsApi
 
   class Configuration
@@ -48,39 +51,44 @@ module SearsApi
 
   end
 
+  module MethodMissingDeligation
+
+    def method_missing(sym)
+      res = Ick::Try.instance.invoke (deligate) {|x| x.send(sym)}
+      res ||= Ick::Try.instance.invoke (deligate) {|x| x.send(ActiveSupport::Inflector.camelize(sym.to_s).to_sym) }
+      res ||= super
+    end
+
+  end
+
   class Response
 
-    attr_accessor :resp
+    attr_accessor :resp, :deligate
+
+    include MethodMissingDeligation
 
     def initialize(resp)
       @resp = resp
-      self.extend Search if try(resp) {|x| x.first.first} == "MercadoResult"
+      self.extend Search if Ick::Try.instance.invoke(resp) {|x| x.first.first} == "MercadoResult"
+      self.extend ProductDetails if Ick::Try.instance.invoke(resp) {|x| x.first.first} == "ProductDetail"
     end
 
   end
 
-  Ick::Try.belongs_to Response
-
-
   module Search
-
-    def count
-      resp.first[1]['ProductCount']
+    def deligate
+      resp.first[1]['Products']['Product'].map {|x| Record.new(OpenStruct.new(x))}
     end
-
-    def products
-      resp.first[1]["Products"]['Product']
-    end
-
   end
 
   module ProductDetails
-
-    def title
-      resp.first[1]['SoftHardProductDetails']['DescriptionName']
+    def deligate
+      Record.new(OpenStruct.new(resp.first[1]['SoftHardProductDetails']))
     end
+  end
 
-
+  Record = Struct.new(:deligate) do
+    include  MethodMissingDeligation
   end
 
 end
