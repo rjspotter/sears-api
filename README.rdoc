@@ -1,6 +1,36 @@
 = sears-api
 
-Description goes here.
+A somewhat simple wrapper on the Sears Developer API http://developer.sears.com/apis
+
+== Installation
+
+  gem install sears-api
+
+== Usage
+
+  require 'sears-api'
+  
+  SearsApi::Configuration.key = '<your-api-key>'
+  
+  re0 = SearsApi::Client.product_search_by_keyword('craftsman')
+  
+  re1 = SearsApi::Client.product_details(re0.first.part_number)
+
+  re1.main_image_url   #=> "http://s.shld.net/is/image/Sears/00935255000 
+  re1.description_name #=> "255 pc. Mechanics Tool Set with Lift Top Storage Chest 
+  # etc.
+
+=== store methods
+
+There are two ways to search a given store (The default is Sears).
+* you can call with at store attribute e.g.
+  SearsApi::Client.product_search_by_keyword('craftsman', :store => 'Kmart')
+* but there are convenience methods 
+  SearsApi::Client.kmart_product_search_by_keyword('craftsman')
+
+=== Method Missing and Delegation
+
+Should do the right thing &trade; in most cases.  You should be able to use the underscored versions of method names correlate to the tags/nodes returned by the Sears API XML.  Mostly I've chosen the delegate to be the node you likely want but if you want to you can access the HTTParty response directly with SearsApi::Response#resp  
 
 == Contributing to sears-api
  
