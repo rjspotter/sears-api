@@ -1,4 +1,5 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
+require "ostruct"
 
 describe "SearsApi" do
 
@@ -19,6 +20,11 @@ describe "SearsApi" do
 
     it "has the correct base url" do
       subject.base_uri.should == "http://api.developer.sears.com/v1"
+    end
+
+    it "returns a custom response object" do
+      subject.stub(:get) { [] }
+      subject.kget('/foo').class.should == SearsApi::Response
     end
 
     context "query defaults" do
@@ -104,10 +110,80 @@ describe "SearsApi" do
 
     subject {SearsApi::Response}
 
-    before  {@resp = stub}
+    before  {@resp = stub.as_null_object}
 
     it "takes a generic response and interns it" do
       subject.new(@resp).resp.should == @resp
+    end
+
+    it "is extended with Search if needed" do
+      @resp.stub_chain(:first,:first).and_return("MercadoResult")
+      subject.new(@resp).singleton_class.included_modules.
+        should include(SearsApi::Search)
+    end
+
+    it "is extended with Search if needed" do
+      @resp.stub_chain(:first,:first).and_return("ProductDetail")
+      subject.new(@resp).singleton_class.included_modules.
+        should include(SearsApi::ProductDetails)
+    end
+
+    describe "instance" do
+
+      subject {SearsApi::Response.new(@resp)}
+
+      it "calls the delegate" do
+        subject.deligate = stub
+        subject.deligate.should_receive(:foo_bar_baz).and_return("foo")
+        subject.foo_bar_baz
+      end
+
+      it "calls the deligate with the camelized version" do
+        subject.deligate = stub
+        subject.deligate.stub(:foo_bar_baz) {nil}
+        subject.deligate.should_receive(:FooBarBaz).and_return('foo')
+        subject.foo_bar_baz
+      end
+
+      it "raises if it doesn't exist" do
+        subject.deligate = stub()
+        expect {subject.foo_bar}.to raise_error
+      end
+
+    end
+
+  end
+
+  describe "Search Results Mixin" do
+    
+    subject do
+      s = OpenStruct.new(:resp => stub)
+      s.extend(SearsApi::Search)
+      s
+    end
+
+    it "creates a deligate" do
+      ex = {:foo => 'bar'}
+      subject.resp.stub_chain(:first,:[],:[],:[]).and_return([ex])
+      OpenStruct.should_receive(:new).with(ex)
+      subject.deligate
+    end
+
+  end
+
+  describe "Product Details Mixin" do
+
+    subject do
+      s = OpenStruct.new(:resp => stub)
+      s.extend(SearsApi::ProductDetails)
+      s
+    end
+
+    it "creates a deligate" do
+      ex = {:foo => 'bar'}
+      subject.resp.stub_chain(:first,:[],:[]).and_return(ex)
+      OpenStruct.should_receive(:new).with(ex)
+      subject.deligate
     end
 
   end
