@@ -74,4 +74,13 @@ module SearsApi
 
   end
 
+  module ProductDetails
+
+    def title
+      resp.first[1]['SoftHardProductDetails']['DescriptionName']
+    end
+
+
+  end
+
 end

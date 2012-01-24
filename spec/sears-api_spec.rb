@@ -126,8 +126,6 @@ describe "SearsApi" do
 
   describe "Search Results Mixin" do
 
-
-
     before {
       @resp = stub.as_null_object
       @s = OpenStruct.new(:resp => @resp)
@@ -152,6 +150,26 @@ describe "SearsApi" do
       end
       @resp.stub_chain(:first,:[],:[]).and_return(expecter)
       subject.products.should == []
+    end
+
+  end
+
+  describe "Product Details Mixin" do
+
+    before {
+      @resp = stub.as_null_object
+      @s = OpenStruct.new(:resp => @resp)
+      @s.extend(SearsApi::ProductDetails)
+    }
+    subject {@s}
+
+    it "has a title for the product" do
+      expecter = stub.tap do |x|
+        x.should_receive(:[]).with('DescriptionName').
+          and_return('This is a Cool Product')
+      end
+      @resp.stub_chain(:first,:[],:[]).and_return(expecter)
+      subject.title.should == "This is a Cool Product"
     end
 
   end
