@@ -20,12 +20,14 @@ Gem::Specification.new do |s|
     ".document",
     ".rspec",
     "Gemfile",
+    "Gemfile.lock",
     "Guardfile",
     "LICENSE.txt",
     "README.rdoc",
     "Rakefile",
     "VERSION",
     "lib/sears-api.rb",
+    "sears-api.gemspec",
     "spec/sears-api_spec.rb",
     "spec/spec_helper.rb"
   ]
