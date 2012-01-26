@@ -26,6 +26,10 @@ module SearsApi
         Response.new(get(path, opt))
       end
 
+      def store_locator(zip, opt = {})
+        kget('/StoreLocator', :query => {:zipCode => '94132'}.merge(opt))
+      end
+
       def product_details(part_number, opt = {})
         kget('/productdetails', :query => {:partNumber => part_number}.merge(opt))
       end
@@ -34,6 +38,10 @@ module SearsApi
         kget('/productsearch', 
              :query => {:keyword => keyword,:searchType => 'keyword'}.
              merge(opt))
+      end
+
+      def current_promotions(opt = {})
+        kget('/CurrentPromotions', :query => opt)
       end
 
       # for each foo in the first array create methods prefixed with 
@@ -69,19 +77,21 @@ module SearsApi
 
     def initialize(resp)
       @resp = resp
-      self.extend Search if Ick::Try.instance.invoke(resp) {|x| x.first.first} == "MercadoResult"
-      self.extend ProductDetails if Ick::Try.instance.invoke(resp) {|x| x.first.first} == "ProductDetail"
+
+      %w[MercadoResult ProductDetail].each do |y|
+        self.extend eval(y) if Ick::Try.instance.invoke(resp) {|x| x.first.first} == y
+      end
     end
 
   end
 
-  module Search
+  module MercadoResult
     def deligate
       resp.first[1]['Products']['Product'].map {|x| Record.new(OpenStruct.new(x))}
     end
   end
 
-  module ProductDetails
+  module ProductDetail
     def deligate
       Record.new(OpenStruct.new(resp.first[1]['SoftHardProductDetails']))
     end

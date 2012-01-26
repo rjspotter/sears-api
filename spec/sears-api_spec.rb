@@ -57,6 +57,20 @@ describe "SearsApi" do
 
     end
 
+    context "store locator" do
+      it "takes a zipcode" do
+        subject.should_receive(:kget).
+          with('/StoreLocator', :query => {:zipCode => '94132'})
+        subject.store_locator('94132')
+      end
+
+      it "takes an override" do
+        subject.should_receive(:kget).
+          with('/StoreLocator', :query => {:zipCode => '94132', :stateCode => 'CA'})
+        subject.store_locator('94132', {:stateCode => 'CA'})
+      end
+    end
+
     context "product details" do
       it "searches by partnumber" do
         subject.should_receive(:kget).
@@ -104,6 +118,19 @@ describe "SearsApi" do
 
     end
 
+    context "current promotions" do
+      it "calls kget to CurrentPromotions" do
+        subject.should_receive(:kget).
+          with('/CurrentPromotions', :query => {})
+        subject.current_promotions
+      end
+      it "takes an opt hash" do
+        subject.should_receive(:kget).
+          with('/CurrentPromotions', :query => {:sortFlag => true})
+        subject.current_promotions(:sortFlag => true)
+      end
+    end
+
   end
 
   describe "Response" do
@@ -116,16 +143,16 @@ describe "SearsApi" do
       subject.new(@resp).resp.should == @resp
     end
 
-    it "is extended with Search if needed" do
+    it "is extended with MercadoResult if needed" do
       @resp.stub_chain(:first,:first).and_return("MercadoResult")
       subject.new(@resp).singleton_class.included_modules.
-        should include(SearsApi::Search)
+        should include(SearsApi::MercadoResult)
     end
 
-    it "is extended with Search if needed" do
+    it "is extended with ProductDetail if needed" do
       @resp.stub_chain(:first,:first).and_return("ProductDetail")
       subject.new(@resp).singleton_class.included_modules.
-        should include(SearsApi::ProductDetails)
+        should include(SearsApi::ProductDetail)
     end
 
     describe "instance" do
@@ -154,11 +181,11 @@ describe "SearsApi" do
 
   end
 
-  describe "Search Results Mixin" do
+  describe "MercadoResult Results Mixin" do
     
     subject do
       s = OpenStruct.new(:resp => stub)
-      s.extend(SearsApi::Search)
+      s.extend(SearsApi::MercadoResult)
       s
     end
 
@@ -175,7 +202,7 @@ describe "SearsApi" do
 
     subject do
       s = OpenStruct.new(:resp => stub)
-      s.extend(SearsApi::ProductDetails)
+      s.extend(SearsApi::ProductDetail)
       s
     end
 

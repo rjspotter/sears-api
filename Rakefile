@@ -18,7 +18,7 @@ Jeweler::Tasks.new do |gem|
   gem.homepage = "http://github.com/rjspotter/sears-api"
   gem.license = "MIT"
   gem.summary = %Q{gem for the sears developer api}
-  gem.description = %Q{just your basic wrapper}
+  gem.description = %Q{just your basic wrapper'}
   gem.email = "rjspotter@gmail.com"
   gem.authors = ["rjspotter"]
   # dependencies defined in Gemfile
