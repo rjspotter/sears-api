@@ -41,13 +41,15 @@ module SearsApi
       end
 
       def current_promotions(opt = {})
-        kget('/CurrentPromotions', :query => opt)
+        def_opts = {:storeName => 'Sears'}
+        def_opts[:storeName] = opt[:store] if opt[:store]
+        kget('/CurrentPromotions', :query => def_opts.merge(opt))
       end
 
       # for each foo in the first array create methods prefixed with 
       # the store names like kmart_foo, mygofer_foo, sears_foo
       # although sears_foo == foo
-      [:product_search_by_keyword, :product_details].each do |meth|
+      [:product_search_by_keyword, :product_details, :current_promotions, :store_locator].each do |meth|
         %w[kmart mygofer sears].each do |store_name|
           define_method("#{store_name}_#{meth.to_s}".to_sym) do |keyword|
             send(meth.to_sym, keyword, :store => store_name.capitalize)
