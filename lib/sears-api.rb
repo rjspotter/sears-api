@@ -80,8 +80,8 @@ module SearsApi
     def initialize(resp)
       @resp = resp
 
-      %w[MercadoResult ProductDetail].each do |y|
-        self.extend eval(y) if Ick::Try.instance.invoke(resp) {|x| x.first.first} == y
+      %w[MercadoResult ProductDetail PromotionDetails showStoreLocator].each do |y|
+        self.extend eval(ActiveSupport::Inflector.camelize(y)) if Ick::Try.instance.invoke(resp) {|x| x.first.first} == y
       end
     end
 
@@ -96,6 +96,18 @@ module SearsApi
   module ProductDetail
     def deligate
       Record.new(OpenStruct.new(resp.first[1]['SoftHardProductDetails']))
+    end
+  end
+
+  module PromotionDetails
+    def deligate
+      resp.first[1]['PromotionDetail'].map {|x| Record.new(OpenStruct.new(x))}
+    end
+  end
+
+  module ShowStoreLocator
+    def deligate
+      resp.first[1]['getStoreLocator']['StoreLocations'].map {|x| Record.new(OpenStruct.new(x))}
     end
   end
 
