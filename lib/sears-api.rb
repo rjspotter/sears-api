@@ -63,9 +63,9 @@ module SearsApi
 
   module MethodMissingDeligation
 
-    def method_missing(sym)
-      res = Ick::Try.instance.invoke (deligate) {|x| x.send(sym)}
-      res ||= Ick::Try.instance.invoke (deligate) {|x| x.send(ActiveSupport::Inflector.camelize(sym.to_s).to_sym) }
+    def method_missing(sym, *args, &block)
+      res = Ick::Try.instance.invoke (deligate) {|x| x.send(sym, *args, &block)}
+      res ||= Ick::Try.instance.invoke (deligate) {|x| x.send(ActiveSupport::Inflector.camelize(sym.to_s).to_sym, *args, &block) }
       res ||= super
     end
 
