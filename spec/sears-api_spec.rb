@@ -160,6 +160,12 @@ describe "SearsApi" do
         should include(SearsApi::ProductDetail)
     end
 
+    it "is extended with showStoreLocator if needed" do
+      @resp.stub_chain(:first,:first).and_return("showStoreLocator")
+      subject.new(@resp).singleton_class.included_modules.
+        should include(SearsApi::ShowStoreLocator)
+    end
+
     describe "instance" do
 
       subject {SearsApi::Response.new(@resp)}
@@ -220,4 +226,35 @@ describe "SearsApi" do
 
   end
 
+  describe "PromotionDetails Mixin" do
+    subject do
+      s = OpenStruct.new(:resp => stub)
+      s.extend(SearsApi::PromotionDetails)
+      s
+    end
+
+    it "creates a deligate" do
+      ex = {:foo => 'bar'}
+      subject.resp.stub_chain(:first,:[],:[]).and_return([ex])
+      OpenStruct.should_receive(:new).with(ex)
+      subject.deligate      
+    end
+  end
+
+  describe "ShowStoreLocator Mixin" do
+    
+    subject do
+      s = OpenStruct.new(:resp => stub)
+      s.extend(SearsApi::ShowStoreLocator)
+      s
+    end
+
+    it "creates a deligate" do
+      ex = {:foo => 'bar'}
+      subject.resp.stub_chain(:first,:[],:[],:[]).and_return([ex])
+      OpenStruct.should_receive(:new).with(ex)
+      subject.deligate
+    end
+
+  end
 end
