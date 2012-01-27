@@ -121,13 +121,18 @@ describe "SearsApi" do
     context "current promotions" do
       it "calls kget to CurrentPromotions" do
         subject.should_receive(:kget).
-          with('/CurrentPromotions', :query => {})
+          with('/CurrentPromotions', :query => {:storeName => 'Sears'})
         subject.current_promotions
       end
       it "takes an opt hash" do
         subject.should_receive(:kget).
-          with('/CurrentPromotions', :query => {:sortFlag => true})
+          with('/CurrentPromotions', :query => {:sortFlag => true, :storeName => 'Sears'})
         subject.current_promotions(:sortFlag => true)
+      end
+      it "hides the api inconsistancy" do
+        subject.should_receive(:kget).
+          with('/CurrentPromotions', :query => {:sortFlag => true, :storeName => 'Kmart', :store => 'Kmart'})
+        subject.current_promotions(:sortFlag => true, :store => 'Kmart')
       end
     end
 
